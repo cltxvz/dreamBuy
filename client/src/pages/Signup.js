@@ -1,4 +1,5 @@
 import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 
 const Signup = () => {
@@ -6,12 +7,13 @@ const Signup = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate(); // 👈 React Router hook
 
     const handleSignup = async (e) => {
         e.preventDefault();
         try {
             await signup(name, email, password);
-            window.location.href = "/dashboard";
+            navigate("/dashboard"); // 👈 Redirect using React Router
         } catch (err) {
             alert(err);
         }
@@ -19,6 +21,7 @@ const Signup = () => {
 
     return (
         <form onSubmit={handleSignup}>
+            <h2>Sign Up</h2>
             <input type="text" placeholder="Name" onChange={(e) => setName(e.target.value)} required />
             <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} required />
             <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} required />

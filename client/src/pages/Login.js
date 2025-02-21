@@ -1,16 +1,18 @@
 import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 
 const Login = () => {
     const { login } = useContext(AuthContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate(); // 👈 React Router hook
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             await login(email, password);
-            window.location.href = "/dashboard"; // Redirect after login
+            navigate("/dashboard"); // 👈 Redirect using React Router
         } catch (err) {
             alert(err);
         }
