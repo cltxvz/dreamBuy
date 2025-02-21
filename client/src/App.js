@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import ProductCatalog from "./pages/ProductCatalog";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -14,7 +15,7 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<h1>Welcome to DreamBuy!</h1>} />
+                <Route path="/" element={<ProductCatalog />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />

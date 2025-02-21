@@ -7,13 +7,13 @@ const Signup = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate(); // 👈 React Router hook
+    const navigate = useNavigate();
 
     const handleSignup = async (e) => {
         e.preventDefault();
         try {
             await signup(name, email, password);
-            navigate("/dashboard"); // 👈 Redirect using React Router
+            navigate("/");
         } catch (err) {
             alert(err);
         }
