@@ -1,18 +1,20 @@
 import React, { useContext } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import AuthContext from "./context/AuthContext";
 import ProductCatalog from "./pages/ProductCatalog";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Cart from "./pages/Cart";
-import AuthContext from "./context/AuthContext";
-import Navbar from "./components/Navbar";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
-
+import Navbar from "./components/Navbar";
 
 const ProtectedRoute = ({ element }) => {
-    const { user } = useContext(AuthContext);
+    const { user, loading } = useContext(AuthContext);
+
+    if (loading) return <div>Loading...</div>;
+
     return user ? element : <Navigate to="/login" />;
 };
 
