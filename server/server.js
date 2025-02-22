@@ -24,6 +24,9 @@ app.use("/api/users", userRoutes);
 const productRoutes = require("./routes/productRoutes");
 app.use("/api/products", productRoutes);
 
+const cartRoutes = require("./routes/cartRoutes");
+app.use("/api/cart", cartRoutes);
+
 app.get("/", (req, res) => {
     res.send("DreamBuy API is running...");
 });

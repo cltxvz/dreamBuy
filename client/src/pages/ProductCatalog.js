@@ -1,14 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
+import AuthContext from "../context/AuthContext";
 
 const ProductCatalog = () => {
     const [products, setProducts] = useState([]);
+    const { user } = useContext(AuthContext); // Get user context
 
     useEffect(() => {
         axios.get("http://localhost:5001/api/products")
             .then((res) => setProducts(res.data))
             .catch((err) => console.error(err));
     }, []);
+
+    const addToCart = (productId) => {
+        if (!user) {
+            alert("Please log in to add items to your cart.");
+            return;
+        }
+        axios.post(`http://localhost:5001/api/cart/${user.userId}/add`, { productId })
+            .then(() => alert("Added to cart!"))
+            .catch((err) => console.error(err));
+    };
 
     return (
         <div>
@@ -21,7 +33,7 @@ const ProductCatalog = () => {
                         <p>{product.description}</p>
                         <p><strong>${product.price.toLocaleString()}</strong></p>
                         <p>Delivery: {product.deliveryTime} days</p>
-                        <button>Add to Cart</button>
+                        <button onClick={() => addToCart(product._id)}>Add to Cart</button>
                     </div>
                 ))}
             </div>

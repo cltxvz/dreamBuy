@@ -4,7 +4,9 @@ import ProductCatalog from "./pages/ProductCatalog";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Cart from "./pages/Cart";
 import AuthContext from "./context/AuthContext";
+import Navbar from "./components/Navbar";
 
 const ProtectedRoute = ({ element }) => {
     const { user } = useContext(AuthContext);
@@ -14,11 +16,13 @@ const ProtectedRoute = ({ element }) => {
 const App = () => {
     return (
         <Router>
+            <Navbar />
             <Routes>
                 <Route path="/" element={<ProductCatalog />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
+                <Route path="/cart" element={<ProtectedRoute element={<Cart />} />} />
             </Routes>
         </Router>
     );
