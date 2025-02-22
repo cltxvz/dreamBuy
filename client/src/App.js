@@ -7,6 +7,9 @@ import Dashboard from "./pages/Dashboard";
 import Cart from "./pages/Cart";
 import AuthContext from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
+
 
 const ProtectedRoute = ({ element }) => {
     const { user } = useContext(AuthContext);
@@ -23,6 +26,8 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
                 <Route path="/cart" element={<ProtectedRoute element={<Cart />} />} />
+                <Route path="/checkout" element={<ProtectedRoute element={<Checkout />} />} />
+                <Route path="/orders" element={<ProtectedRoute element={<Orders />} />} />
             </Routes>
         </Router>
     );
