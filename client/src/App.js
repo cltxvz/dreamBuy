@@ -9,6 +9,8 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import Navbar from "./components/Navbar";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const ProtectedRoute = ({ element }) => {
     const { user, loading } = useContext(AuthContext);
@@ -30,6 +32,8 @@ const App = () => {
                 <Route path="/cart" element={<ProtectedRoute element={<Cart />} />} />
                 <Route path="/checkout" element={<ProtectedRoute element={<Checkout />} />} />
                 <Route path="/orders" element={<ProtectedRoute element={<Orders />} />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
             </Routes>
         </Router>
     );

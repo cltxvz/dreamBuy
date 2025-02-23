@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // 👈 Import Link
 import AuthContext from "../context/AuthContext";
 
 const Login = () => {
@@ -21,10 +21,25 @@ const Login = () => {
     return (
         <form onSubmit={handleLogin}>
             <h2>Login</h2>
-            <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} required />
+            <input 
+                type="email" 
+                placeholder="Email" 
+                onChange={(e) => setEmail(e.target.value)} 
+                required 
+            />
+            <input 
+                type="password" 
+                placeholder="Password" 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+            />
             <button type="submit">Log In</button>
-            <p>Don't have an account? <a href="/signup">Sign up here</a></p>
+            <p>
+                Don't have an account? <Link to="/signup">Sign up here</Link>
+            </p>
+            <p>
+                <Link to="/forgot-password">Forgot Password?</Link> 
+            </p>
         </form>
     );
 };
