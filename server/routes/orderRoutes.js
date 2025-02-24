@@ -106,55 +106,37 @@ router.post("/:orderId/cancel/:productId", async (req, res) => {
     }
 });
 
-
-// Simulated order status updates (Item-based updates)
+// Simulated order status updates (item-based status)
 setInterval(async () => {
     try {
-        const orders = await Order.find({ status: { $ne: "Delivered" } });
+        const orders = await Order.find({ "items.status": { $ne: "Delivered" } });
 
         for (const order of orders) {
-            let allDelivered = true;
-            let anyShipped = false;
-            let anyOutForDelivery = false;
+            let orderChanged = false;
 
             order.items.forEach(item => {
-                if (item.status === "Canceled" || item.status === "Delivered") return;
+                if (item.status === "Delivered") return;
 
-                const timeElapsed = (Date.now() - order.placedAt) / (1000 * 60 * 60 * 24); // Time in days
-
-                if (!item.deliveryTime) item.deliveryTime = 7; // Ensure `deliveryTime` exists
+                const timeElapsed = (Date.now() - new Date(item.placedAt)) / (1000 * 60 * 60 * 24);
 
                 if (timeElapsed >= item.deliveryTime) {
                     item.status = "Delivered";
-                } else if (timeElapsed >= item.deliveryTime - 0.125) {
+                } else if (timeElapsed >= item.deliveryTime - 0.125) { // ~3 hours before delivery
                     item.status = "Out for Delivery";
-                    anyOutForDelivery = true;
                 } else if (timeElapsed >= item.deliveryTime / 2) {
                     item.status = "Shipped";
-                    anyShipped = true;
                 } else if (timeElapsed >= item.deliveryTime / 12) {
                     item.status = "Processed";
-                } else {
-                    allDelivered = false;
                 }
+
+                orderChanged = true;
             });
 
-            if (allDelivered) {
-                order.status = "Delivered";
-            } else if (anyOutForDelivery) {
-                order.status = "Out for Delivery";
-            } else if (anyShipped) {
-                order.status = "Shipped";
-            } else {
-                order.status = "Processed";
-            }
-
-            await order.save();
+            if (orderChanged) await order.save();
         }
     } catch (error) {
         console.error("Error updating order statuses:", error);
     }
-}, 60000); // Runs every 1 minute
-
+}, 60000); // runs every minute
 
 module.exports = router;

@@ -4,56 +4,67 @@ import axios from "axios";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true); // Prevents flashing login page
+    const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem("user");
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
+    const [loading, setLoading] = useState(true); // Prevent flashing login page
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (token) {
+        const storedUser = localStorage.getItem("user");
+
+        if (token && storedUser) {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const storedUser = JSON.parse(localStorage.getItem("user"));
-            setUser(storedUser);
+            setUser(JSON.parse(storedUser));
+        } else {
+            setUser(null);
         }
-        setLoading(false); // Finish loading once user data is retrieved
+        setLoading(false); // Finish loading after user data retrieval
     }, []);
 
     // **Login function**
     const login = async (email, password) => {
         try {
-    
             const res = await axios.post("http://localhost:5001/api/auth/login", { email, password });
-    
+
             const userData = {
                 userId: res.data.userId,
                 name: res.data.name,
                 email: res.data.email,
                 token: res.data.token
             };
-    
+
+            localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(userData));
+            axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+
             setUser(userData);
         } catch (error) {
             console.error("Login Error:", error.response?.data?.message);
             throw error.response?.data?.message || "Login failed";
         }
     };
-    
-    
 
     // **Signup function**
     const signup = async (name, email, password) => {
         try {
             const res = await axios.post("http://localhost:5001/api/auth/signup", { name, email, password });
-            const userData = { userId: res.data.userId, name: res.data.name, email: res.data.email };
 
-            // Store token
+            const userData = {
+                userId: res.data.userId,
+                name: res.data.name,
+                email: res.data.email,
+                token: res.data.token
+            };
+
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(userData));
-
-            // Update Axios default headers
             axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+
             setUser(userData);
         } catch (error) {
+            console.error("Signup Error:", error.response?.data?.message);
             throw error.response?.data?.message || "Signup failed";
         }
     };
@@ -68,12 +79,12 @@ export const AuthProvider = ({ children }) => {
 
     // **Update user function after profile update (Ensures token update)**
     const updateUser = (updatedUser, newToken = null) => {
-        const updatedUserData = { ...updatedUser };
+        const updatedUserData = { ...user, ...updatedUser };
 
-        // If a new token is provided, update it in localStorage and Axios headers
         if (newToken) {
             localStorage.setItem("token", newToken);
             axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+            updatedUserData.token = newToken;
         }
 
         localStorage.setItem("user", JSON.stringify(updatedUserData));
@@ -82,7 +93,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ user, login, signup, logout, updateUser, loading }}>
-            {children}
+            {!loading && children}
         </AuthContext.Provider>
     );
 };

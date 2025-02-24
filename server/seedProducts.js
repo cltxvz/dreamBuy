@@ -4,32 +4,25 @@ const Product = require("./models/Product");
 
 const products = [
     {
-        name: "Lamborghini Aventador",
-        price: 500000,
+        name: "10 Minutes Test",
+        price: 10,
         image: "https://source.unsplash.com/600x400/?lamborghini",
-        description: "A high-performance sports car with a V12 engine.",
-        deliveryTime: 7,
+        description: "10 Minute Test.",
+        deliveryTime: 0.006944,
     },
     {
-        name: "Gulfstream G650 Jet",
-        price: 65000000,
+        name: "5 Minutes Test",
+        price: 5,
         image: "https://source.unsplash.com/600x400/?private-jet",
-        description: "A luxurious private jet with state-of-the-art technology.",
-        deliveryTime: 14,
+        description: "5 Minute Test.",
+        deliveryTime: 0.003472,
     },
     {
-        name: "Luxury Mansion in Beverly Hills",
-        price: 25000000,
+        name: "1 Minute Test",
+        price: 1,
         image: "https://source.unsplash.com/600x400/?mansion",
-        description: "An exquisite mansion with a pool, home theater, and more.",
-        deliveryTime: 30,
-    },
-    {
-        name: "Rolex Daytona",
-        price: 30000,
-        image: "https://source.unsplash.com/600x400/?rolex",
-        description: "A luxury timepiece crafted from the finest materials.",
-        deliveryTime: 3,
+        description: "1 Minute Test.",
+        deliveryTime: 0.0006944,
     },
 ];
 
