@@ -4,6 +4,20 @@ const Product = require("./models/Product");
 
 const products = [
     {
+        name: "1 Hour Test",
+        price: 60,
+        image: "https://source.unsplash.com/600x400/?lamborghini",
+        description: "1 Hour Test.",
+        deliveryTime: 0.0417,
+    },
+    {
+        name: "30 Minutes Test",
+        price: 30,
+        image: "https://source.unsplash.com/600x400/?lamborghini",
+        description: "30 Minute Test.",
+        deliveryTime: 0.0208,
+    },
+    {
         name: "10 Minutes Test",
         price: 10,
         image: "https://source.unsplash.com/600x400/?lamborghini",

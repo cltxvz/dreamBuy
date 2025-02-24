@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useCallback } from "react";
 import AuthContext from "../context/AuthContext";
 import axios from "axios";
 import OrderProgress from "../components/OrderProgress";
+import io from "socket.io-client";
 
 const Orders = () => {
     const { user } = useContext(AuthContext);
@@ -18,10 +19,28 @@ const Orders = () => {
 
     useEffect(() => {
         fetchOrders();
-
-        const interval = setInterval(fetchOrders, 60000); // Refresh every minute
-        return () => clearInterval(interval);
-    }, [fetchOrders]);
+    
+        const socket = io("http://localhost:5001", {
+            query: { userId: user.userId }
+        });
+    
+        socket.on("orderUpdated", (updatedOrder) => {
+            setOrders(prevOrders =>
+                prevOrders.map(order => {
+                    // Only update if the order matches
+                    if (order.orderId === updatedOrder._id) {
+                        const updatedItem = updatedOrder.items.find(i => i.productId === order.product._id);
+                        if (updatedItem) {
+                            return { ...order, status: updatedItem.status };
+                        }
+                    }
+                    return order;
+                })
+            );
+        });
+    
+        return () => socket.disconnect();
+    }, [fetchOrders, user]);  
 
     const cancelOrderItem = (orderId, productId) => {
         axios.post(`http://localhost:5001/api/orders/${orderId}/cancel/${productId}`)
