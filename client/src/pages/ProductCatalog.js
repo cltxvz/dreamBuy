@@ -28,9 +28,8 @@ const ProductCatalog = () => {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
                 {products.map((product) => (
                     <div key={product._id} style={{ border: "1px solid #ddd", padding: "10px", textAlign: "center" }}>
-                        <img src={product.image} alt={product.name} style={{ width: "100%", height: "200px", objectFit: "cover" }} />
+                        <img src={product.imageURL} alt={product.name} style={{ width: "100%", height: "200px", objectFit: "cover" }} />
                         <h3>{product.name}</h3>
-                        <p>{product.description}</p>
                         <p><strong>${product.price.toLocaleString()}</strong></p>
                         <p>Delivery: {product.deliveryTime} days</p>
                         <button onClick={() => addToCart(product._id)}>Add to Cart</button>
