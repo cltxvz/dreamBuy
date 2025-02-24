@@ -57,6 +57,21 @@ const Orders = () => {
         showCompleted ? order.status === "Delivered" : order.status !== "Delivered"
     );
 
+    // Helper function for ETA calculation
+    const calculateETA = (placedAt, deliveryDays) => {
+        const eta = new Date(new Date(placedAt).getTime() + deliveryDays * 24 * 60 * 60 * 1000);
+
+        return eta.toLocaleDateString(undefined, {
+            weekday: "long",
+            month: "long",
+            day: "numeric"
+        }) + " - " + eta.toLocaleTimeString(undefined, {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    };
+
+
     return (
         <div>
             <h1>Your Orders</h1>
@@ -74,7 +89,7 @@ const Orders = () => {
                         <p><strong>Product:</strong> {order.product.name}</p>
                         <p><strong>Quantity:</strong> {order.quantity}</p>
                         <p><strong>Price:</strong> ${order.totalAmount.toLocaleString()}</p>
-                        <p><strong>Delivery Time:</strong> {order.deliveryTime} days</p>
+                        <p><strong>Delivery ETA:</strong> {calculateETA(order.placedAt, order.deliveryTime)}</p>
                         <p><strong>Shipping Address:</strong> {order.address}</p>
                         <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
 

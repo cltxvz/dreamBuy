@@ -43,7 +43,7 @@ module.exports = (io) => {
         });
     };
 
-        // Place an order
+    // Place an order
     router.post("/:userId/checkout", async (req, res) => {
         try {
             const userId = req.params.userId;
@@ -128,23 +128,49 @@ module.exports = (io) => {
     router.post("/:orderId/cancel/:productId", async (req, res) => {
         try {
             const { orderId, productId } = req.params;
-            const order = await Order.findById(orderId);
+
+            // Find order
+            const order = await Order.findById(orderId).populate('items.productId');
             if (!order) return res.status(404).json({ message: "Order not found" });
 
-            order.items = order.items.filter(item => item.productId.toString() !== productId);
+            // Find the item being canceled
+            const itemToCancel = order.items.find(item => item.productId._id.toString() === productId);
+            if (!itemToCancel) return res.status(404).json({ message: "Product not found in order" });
 
+            // Calculate refund
+            const refundAmount = itemToCancel.productId.price * itemToCancel.quantity;
+
+            // Find the user to refund
+            const user = await User.findById(order.userId);
+            if (!user) return res.status(404).json({ message: "User not found" });
+
+            // Refund the user's card
+            const card = user.paymentMethods.find(c => c.cardNumber === order.paymentMethod.cardNumber);
+            if (card) {
+                card.balance += refundAmount;
+                await user.save();
+            } else {
+                return res.status(400).json({ message: "Original payment method not found, refund failed." });
+            }
+
+            // Remove the canceled item from the order
+            order.items = order.items.filter(item => item.productId._id.toString() !== productId);
+
+            // If no items left, remove entire order
             if (order.items.length === 0) {
                 await Order.findByIdAndDelete(orderId);
-                return res.json({ message: "Order deleted successfully" });
+                return res.json({ message: "Order deleted and amount refunded successfully" });
             } else {
                 await order.save();
-                return res.json({ message: "Item removed from order", order });
+                return res.json({ message: "Item canceled and amount refunded successfully", order });
             }
+
         } catch (error) {
             console.error("Cancel Order Error:", error);
             res.status(500).json({ message: "Server error" });
         }
     });
+
     
     return router;
 };
