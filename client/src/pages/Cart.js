@@ -49,10 +49,13 @@ const Cart = () => {
     };
 
     return (
-        <div>
-            <h1>Your Shopping Cart</h1>
+        <div style={{ padding: "20px", maxWidth: "900px", margin: "auto" }}>
+            <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Shopping Cart</h1>
+
             {cart.length === 0 ? (
-                <p>Your cart is empty. <Link to="/">Go to Products</Link></p>
+                <p style={{ textAlign: "center" }}>
+                    Your cart is empty. <Link to="/" style={{ color: "#4CAF50", fontWeight: "bold" }}>Go to Products</Link>
+                </p>
             ) : (
                 <>
                     {cart.map((item) => (
@@ -60,31 +63,69 @@ const Cart = () => {
                             display: "flex", 
                             alignItems: "center", 
                             border: "1px solid #ddd", 
-                            padding: "10px", 
-                            marginBottom: "10px" 
+                            borderRadius: "8px",
+                            padding: "15px", 
+                            marginBottom: "15px",
+                            backgroundColor: "#fff",
+                            boxShadow: "0px 2px 5px rgba(0,0,0,0.1)"
                         }}>
                             {/* Product Image (Using CORS workaround) */}
                             <img 
                                 src={`https://images.weserv.nl/?url=${encodeURIComponent(item.productId.imageUrl)}`} 
                                 alt={item.productId.name} 
-                                style={{ width: "80px", height: "80px", marginRight: "15px" }} 
+                                style={{ 
+                                    width: "100px", 
+                                    height: "100px", 
+                                    objectFit: "contain", 
+                                    marginRight: "15px" 
+                                }} 
                             />
 
                             <div style={{ flex: 1 }}>
-                                <h3>{item.productId.name}</h3>
-                                <p>Price: ${item.productId.price.toLocaleString()}</p>
+                                <h3 style={{ margin: "5px 0" }}>{item.productId.name}</h3>
+                                <p style={{ margin: "5px 0", fontSize: "16px", fontWeight: "bold" }}>
+                                    ${item.productId.price.toLocaleString()}
+                                </p>
 
                                 {/* Quantity Adjustments */}
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                    <button onClick={() => decreaseQuantity(item.productId._id, item.quantity)}>-</button>
-                                    <span>{item.quantity}</span>
-                                    <button onClick={() => increaseQuantity(item.productId._id)}>+</button>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "10px" }}>
+                                    <button 
+                                        onClick={() => decreaseQuantity(item.productId._id, item.quantity)}
+                                        style={{
+                                            border: "none",
+                                            padding: "5px 10px",
+                                            borderRadius: "4px",
+                                            cursor: "pointer"
+                                        }}
+                                    >
+                                        -
+                                    </button>
+                                    <span style={{ fontSize: "18px", fontWeight: "bold" }}>{item.quantity}</span>
+                                    <button 
+                                        onClick={() => increaseQuantity(item.productId._id)}
+                                        style={{
+                                            border: "none",
+                                            padding: "5px 10px",
+                                            borderRadius: "4px",
+                                            cursor: "pointer"
+                                        }}
+                                    >
+                                        +
+                                    </button>
                                 </div>
 
                                 {/* Remove Button */}
                                 <button 
                                     onClick={() => removeFromCart(item.productId._id)} 
-                                    style={{ marginTop: "10px", background: "red", color: "white", padding: "5px 10px" }}
+                                    style={{ 
+                                        marginTop: "10px", 
+                                        background: "red", 
+                                        color: "white", 
+                                        padding: "7px 12px",
+                                        borderRadius: "4px",
+                                        border: "none",
+                                        cursor: "pointer"
+                                    }}
                                 >
                                     Remove
                                 </button>
@@ -93,11 +134,22 @@ const Cart = () => {
                     ))}
 
                     {/* Checkout Button */}
-                    <Link to="/checkout">
-                        <button style={{ marginTop: "20px", padding: "10px", fontSize: "16px" }}>
-                            Proceed to Checkout
-                        </button>
-                    </Link>
+                    <div style={{ textAlign: "center", marginTop: "20px" }}>
+                        <Link to="/checkout">
+                            <button style={{
+                                padding: "12px 20px",
+                                fontSize: "18px",
+                                backgroundColor: "#4CAF50",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                marginTop: "10px"
+                            }}>
+                                Proceed to Checkout
+                            </button>
+                        </Link>
+                    </div>
                 </>
             )}
         </div>
