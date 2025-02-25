@@ -6,6 +6,7 @@ import axios from "axios";
 const OrderHistory = () => {
     const { user } = useContext(AuthContext);
     const [orders, setOrders] = useState([]);
+    const [toastMessage, setToastMessage] = useState(""); // Toast notification
 
     useEffect(() => {
         if (user) {
@@ -17,27 +18,64 @@ const OrderHistory = () => {
         }
     }, [user]);
 
+    // Calculate the delivery date
+    const calculateDeliveryDate = (placedAt, deliveryDays) => {
+        const deliveryDate = new Date(new Date(placedAt).getTime() + deliveryDays * 24 * 60 * 60 * 1000);
+        return deliveryDate.toLocaleDateString(undefined, {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+        });
+    };
+
     const reorderItems = (order) => {
-        if (!order || !order.items) {
+        if (!order || !order.product) {
             console.error("Order items are undefined");
             return;
         }
 
-        const reorderRequests = order.items.map((item) => {
-            return axios.post(`http://localhost:5001/api/cart/${user.userId}/add`, { 
-                productId: item.productId._id, 
-                quantity: item.quantity 
-            });
-        });
+        const reorderRequest = {
+            userId: user.userId,
+            items: [
+                {
+                    productId: order.product._id,
+                    quantity: order.quantity
+                }
+            ]
+        };
 
-        Promise.all(reorderRequests)
-            .then(() => alert("Items added to cart!"))
+        axios.post(`http://localhost:5001/api/orders/${user.userId}/add-multiple`, reorderRequest)
+            .then(() => {
+                setToastMessage("Items added to cart successfully!"); // Show toast
+                setTimeout(() => setToastMessage(""), 3000); // Hide after 3 sec
+            })
             .catch((err) => console.error("Error reordering items:", err));
     };
 
     return (
         <div style={{ padding: "20px", maxWidth: "900px", margin: "auto" }}>
             <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Order History</h1>
+
+            {/* Toast Notification */}
+            {toastMessage && (
+                <div style={{
+                    position: "fixed",
+                    bottom: "20px",
+                    right: "20px",
+                    backgroundColor: "#4CAF50",
+                    color: "#fff",
+                    padding: "12px 16px",
+                    borderRadius: "5px",
+                    boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
+                    fontSize: "16px",
+                    zIndex: 1000,
+                    transition: "opacity 0.5s ease-in-out",
+                    opacity: toastMessage ? 1 : 0
+                }}>
+                    {toastMessage}
+                </div>
+            )}
 
             <div style={{ textAlign: "right", marginBottom: "20px" }}>
                 <Link to="/orders" style={{
@@ -86,8 +124,9 @@ const OrderHistory = () => {
                         <p><strong>Product:</strong> {order.product.name}</p>
                         <p><strong>Quantity:</strong> {order.quantity}</p>
                         <p><strong>Price:</strong> ${order.totalAmount.toLocaleString()}</p>
-                        <p><strong>Shipping Address:</strong> {order.address}</p>
                         <p><strong>Payment Method:</strong> **** **** **** {order.paymentMethod.slice(-4)}</p>
+                        <p><strong>Shipping Address:</strong> {order.address}</p>
+                        <p><strong>Delivered on:</strong> {calculateDeliveryDate(order.placedAt, order.deliveryTime)}</p>
 
                         {/* Reorder Button */}
                         <button 
