@@ -6,12 +6,37 @@ const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
 
     return (
-        <nav style={{ display: "flex", justifyContent: "space-around", padding: "10px", borderBottom: "1px solid #ddd" }}>
-            <Link to="/">Home</Link>
-            {user && <Link to="/cart">Cart</Link>}
-            {user && <Link to="/orders">Orders</Link>}
-            {user && <Link to="/dashboard">Account</Link>}
-            {user ? <button onClick={logout}>Logout</button> : <Link to="/login">Login</Link>}
+        <nav style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center",
+            padding: "10px",
+            backgroundColor: "#222", 
+            color: "white",
+            fontSize: "16px",
+            gap: "40px",
+            borderBottom: "2px solid #444"
+        }}>
+            <Link to="/" style={{ color: "white", textDecoration: "none" }}>Home</Link>
+            {user && <Link to="/cart" style={{ color: "white", textDecoration: "none" }}>Cart</Link>}
+            {user && <Link to="/orders" style={{ color: "white", textDecoration: "none" }}>Orders</Link>}
+            {user && <Link to="/dashboard" style={{ color: "white", textDecoration: "none" }}>Account</Link>}
+            {user ? (
+                <button 
+                    onClick={logout} 
+                    style={{ 
+                        backgroundColor: "#ff4d4d", 
+                        color: "white", 
+                        border: "none", 
+                        padding: "5px 10px", 
+                        borderRadius: "5px", 
+                        cursor: "pointer"
+                    }}>
+                    Logout
+                </button>
+            ) : (
+                <Link to="/login" style={{ color: "white", textDecoration: "none" }}>Login</Link>
+            )}
         </nav>
     );
 };
