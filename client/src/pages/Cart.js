@@ -1,11 +1,14 @@
 import { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import axios from "axios";
 
 const Cart = () => {
     const { user } = useContext(AuthContext);
     const [cart, setCart] = useState([]);
+    const [cartMessage, setCartMessage] = useState(""); // State for toast notification
+    const [isRedirecting, setIsRedirecting] = useState(false); // State to track button status
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (user) {
@@ -18,7 +21,13 @@ const Cart = () => {
     // Remove item from cart
     const removeFromCart = (productId) => {
         axios.post(`http://localhost:5001/api/cart/${user.userId}/remove`, { productId })
-            .then(() => setCart(cart.filter(item => item.productId._id !== productId)))
+            .then(() => {
+                setCart(cart.filter(item => item.productId._id !== productId));
+
+                // Show toast notification
+                setCartMessage("Item removed from cart.");
+                setTimeout(() => setCartMessage(""), 3000); // Clear message after 3 sec
+            })
             .catch((err) => console.error(err));
     };
 
@@ -48,9 +57,37 @@ const Cart = () => {
         }
     };
 
+    // Handle Checkout with Delay
+    const handleCheckout = () => {
+        setIsRedirecting(true);
+        setTimeout(() => {
+            navigate("/checkout");
+        }, 1000); // 1-second delay before navigating
+    };
+
     return (
         <div style={{ padding: "20px", maxWidth: "900px", margin: "auto" }}>
             <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Shopping Cart</h1>
+
+            {/* Toast Notification for Removed Items */}
+            {cartMessage && (
+                <div style={{
+                    position: "fixed",
+                    bottom: "20px",
+                    right: "20px",
+                    backgroundColor: "#ff4d4d",
+                    color: "#fff",
+                    padding: "12px 16px",
+                    borderRadius: "5px",
+                    boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
+                    fontSize: "16px",
+                    zIndex: 1000,
+                    transition: "opacity 0.5s ease-in-out",
+                    opacity: cartMessage ? 1 : 0
+                }}>
+                    {cartMessage}
+                </div>
+            )}
 
             {cart.length === 0 ? (
                 <p style={{ textAlign: "center" }}>
@@ -69,7 +106,7 @@ const Cart = () => {
                             backgroundColor: "#fff",
                             boxShadow: "0px 2px 5px rgba(0,0,0,0.1)"
                         }}>
-                            {/* Product Image (Using CORS workaround) */}
+                            {/* Product Image */}
                             <img 
                                 src={`https://images.weserv.nl/?url=${encodeURIComponent(item.productId.imageUrl)}`} 
                                 alt={item.productId.name} 
@@ -135,20 +172,23 @@ const Cart = () => {
 
                     {/* Checkout Button */}
                     <div style={{ textAlign: "center", marginTop: "20px" }}>
-                        <Link to="/checkout">
-                            <button style={{
+                        <button 
+                            onClick={handleCheckout}
+                            disabled={isRedirecting} // Button disabled when redirecting
+                            style={{
                                 padding: "12px 20px",
                                 fontSize: "18px",
-                                backgroundColor: "#4CAF50",
+                                backgroundColor: isRedirecting ? "#999" : "#4CAF50",
                                 color: "white",
                                 border: "none",
                                 borderRadius: "6px",
-                                cursor: "pointer",
-                                marginTop: "10px"
-                            }}>
-                                Proceed to Checkout
-                            </button>
-                        </Link>
+                                cursor: isRedirecting ? "not-allowed" : "pointer",
+                                marginTop: "10px",
+                                opacity: isRedirecting ? "0.7" : "1"
+                            }}
+                        >
+                            {isRedirecting ? "Redirecting..." : "Proceed to Checkout"}
+                        </button>
                     </div>
                 </>
             )}

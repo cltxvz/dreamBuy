@@ -9,6 +9,8 @@ const Checkout = () => {
     const [selectedCard, setSelectedCard] = useState("");
     const [selectedAddress, setSelectedAddress] = useState("");
     const [userData, setUserData] = useState({});
+    const [error, setError] = useState({ address: "", payment: "", funds: "" });
+    const [isProcessing, setIsProcessing] = useState(false); // New state to track button state
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,20 +26,37 @@ const Checkout = () => {
     }, [user]);
 
     const handleCheckout = () => {
-        if (!selectedCard) return alert("Please select a payment method!");
-        if (!selectedAddress) return alert("Please select a shipping address!");
+        let hasError = false;
+        const newError = { address: "", payment: "", funds: "" };
+
+        if (!selectedAddress) {
+            newError.address = "Please select a shipping address.";
+            hasError = true;
+        }
+
+        if (!selectedCard) {
+            newError.payment = "Please select a payment method.";
+            hasError = true;
+        }
+
+        setError(newError);
+        if (hasError) return;
+
+        setIsProcessing(true); // Disable button during processing
 
         axios.post(`http://localhost:5001/api/orders/${user.userId}/checkout`, { 
             selectedCard, 
             selectedAddress 
         })
         .then(() => {
-            alert("Order placed successfully!");
-            navigate("/orders");
+            setTimeout(() => {
+                navigate("/orders");
+            }, 1000); // 1-second delay before navigating
         })
         .catch((err) => {
+            setIsProcessing(false); // Re-enable button on error
             if (err.response?.status === 400) {
-                alert(err.response?.data?.message || "Failed to place order. Please try again.");
+                setError((prev) => ({ ...prev, funds: err.response.data.message || "Insufficient balance." }));
             }
         });
     };
@@ -70,12 +89,16 @@ const Checkout = () => {
                                 type="radio" 
                                 name="address" 
                                 value={address} 
-                                onChange={() => setSelectedAddress(address)} 
+                                onChange={() => {
+                                    setSelectedAddress(address);
+                                    setError((prev) => ({ ...prev, address: "" }));
+                                }} 
                             />
                             <label style={{ marginLeft: "8px" }}>{address}</label>
                         </div>
                     ))
                 )}
+                {error.address && <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{error.address}</p>}
             </div>
 
             {/* Payment Methods Section */}
@@ -96,7 +119,10 @@ const Checkout = () => {
                                 type="radio" 
                                 name="payment" 
                                 value={card.cardNumber} 
-                                onChange={() => setSelectedCard(card.cardNumber)} 
+                                onChange={() => {
+                                    setSelectedCard(card.cardNumber);
+                                    setError((prev) => ({ ...prev, payment: "", funds: "" }));
+                                }} 
                             />
                             <label style={{ marginLeft: "8px" }}>
                                 {maskCardNumber(card.cardNumber)} (Balance: ${card.balance.toLocaleString()})
@@ -104,6 +130,8 @@ const Checkout = () => {
                         </div>
                     ))
                 )}
+                {error.payment && <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{error.payment}</p>}
+                {error.funds && <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{error.funds}</p>}
             </div>
 
             {/* Order Summary Section */}
@@ -167,19 +195,21 @@ const Checkout = () => {
             <div style={{ textAlign: "center", marginTop: "20px" }}>
                 <button 
                     onClick={handleCheckout}
+                    disabled={isProcessing} // Button disabled when processing
                     style={{
                         padding: "12px 20px",
                         fontSize: "18px",
-                        backgroundColor: "#4CAF50",
+                        backgroundColor: isProcessing ? "#999" : "#4CAF50",
                         color: "white",
                         border: "none",
                         borderRadius: "6px",
-                        cursor: "pointer",
+                        cursor: isProcessing ? "not-allowed" : "pointer",
                         width: "100%",
-                        marginTop: "5px"
+                        marginTop: "5px",
+                        opacity: isProcessing ? "0.7" : "1"
                     }}
                 >
-                    Place Order
+                    {isProcessing ? "Processing..." : "Place Order"}
                 </button>
             </div>
         </div>

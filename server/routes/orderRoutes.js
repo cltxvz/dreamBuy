@@ -8,32 +8,71 @@ module.exports = (io) => {
 
     // Helper to schedule individual item status updates
     const scheduleItemStatusUpdates = (order, item, io) => {
-        const totalDeliveryMs = item.deliveryTime * 24 * 60 * 60 * 1000; // convert deliveryTime (days) to milliseconds
+        const totalDeliveryMs = item.deliveryTime * 24 * 60 * 60 * 1000; // Convert deliveryTime (days) to milliseconds
+        const maxTimeout = 2147483647; // Max setTimeout limit in JS (24.8 days)
+    
         const milestones = [
             { status: "Processed", timeRatio: 0.1 },
             { status: "Shipped", timeRatio: 0.5 },
             { status: "Out for Delivery", timeRatio: 0.9 },
             { status: "Delivered", timeRatio: 1.0 }
         ];
-
+    
         milestones.forEach(milestone => {
             const delay = totalDeliveryMs * milestone.timeRatio;
             const triggerTime = new Date(item.placedAt).getTime() + delay;
             const currentTime = Date.now();
-            const timeoutDelay = triggerTime - currentTime;
-
-            if (timeoutDelay > 0) {
+            let timeoutDelay = triggerTime - currentTime;
+    
+            if (timeoutDelay > maxTimeout) {
+                
+                // Instead of a long timeout, use daily interval checks
+                const intervalCheck = setInterval(async () => {
+                    try {
+                        const orderToUpdate = await Order.findById(order._id);
+                        if (!orderToUpdate) {
+                            clearInterval(intervalCheck);
+                            return;
+                        }
+    
+                        const itemToUpdate = orderToUpdate.items.id(item._id);
+                        if (!itemToUpdate || itemToUpdate.status === "Delivered") {
+                            clearInterval(intervalCheck);
+                            return;
+                        }
+    
+                        const timeElapsed = (Date.now() - new Date(item.placedAt)) / (1000 * 60 * 60 * 24); // Time in days
+    
+                        if (timeElapsed >= itemToUpdate.deliveryTime) {
+                            itemToUpdate.status = "Delivered";
+                            clearInterval(intervalCheck);
+                        } else if (timeElapsed >= itemToUpdate.deliveryTime - 1) {
+                            itemToUpdate.status = "Out for Delivery";
+                        } else if (timeElapsed >= itemToUpdate.deliveryTime / 2) {
+                            itemToUpdate.status = "Shipped";
+                        } else if (timeElapsed >= itemToUpdate.deliveryTime / 10) {
+                            itemToUpdate.status = "Processed";
+                        }
+    
+                        await orderToUpdate.save();
+                        io.to(order.userId.toString()).emit("orderUpdated", orderToUpdate);
+                    } catch (error) {
+                        console.error("Interval update error:", error);
+                        clearInterval(intervalCheck);
+                    }
+                }, 24 * 60 * 60 * 1000); // Run every 24 hours
+            } else {
                 setTimeout(async () => {
                     try {
                         const orderToUpdate = await Order.findById(order._id);
                         if (!orderToUpdate) return;
-
+    
                         const itemToUpdate = orderToUpdate.items.id(item._id);
                         if (!itemToUpdate || itemToUpdate.status === "Delivered") return;
-
+    
                         itemToUpdate.status = milestone.status;
                         await orderToUpdate.save();
-
+    
                         io.to(order.userId.toString()).emit("orderUpdated", orderToUpdate);
                     } catch (error) {
                         console.error("Scheduled status update error:", error);
@@ -65,12 +104,13 @@ module.exports = (io) => {
             card.balance -= totalAmount;
             await user.save();
 
+            // Assign unique `placedAt` timestamp for each item
             const itemsWithDelivery = cart.items.map(item => ({
                 productId: item.productId._id,
                 quantity: item.quantity,
                 deliveryTime: item.productId.deliveryTime || 7,
                 status: "Processing",
-                placedAt: new Date()
+                placedAt: new Date() // Ensure individual timestamps
             }));
 
             const order = new Order({
@@ -123,7 +163,6 @@ module.exports = (io) => {
         }
     });
 
-
     // Cancel an order item
     router.post("/:orderId/cancel/:productId", async (req, res) => {
         try {
@@ -171,6 +210,5 @@ module.exports = (io) => {
         }
     });
 
-    
     return router;
 };

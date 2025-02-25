@@ -9,6 +9,7 @@ const ProductCatalog = () => {
     const [sortOption, setSortOption] = useState("none");
     const { user } = useContext(AuthContext);
     const [quantities, setQuantities] = useState({});
+    const [cartMessage, setCartMessage] = useState("");
 
     useEffect(() => {
         axios.get("http://localhost:5001/api/products")
@@ -30,7 +31,11 @@ const ProductCatalog = () => {
         }
         const quantity = quantities[productId] || 1;
         axios.post(`http://localhost:5001/api/cart/${user.userId}/add`, { productId, quantity })
-            .then(() => alert("Added to cart!"))
+            .then(() => {
+                // Display success message at bottom-right
+                setCartMessage("Item added to cart!");
+                setTimeout(() => setCartMessage(""), 3000);
+            })
             .catch((err) => console.error(err));
     };
 
@@ -62,9 +67,29 @@ const ProductCatalog = () => {
 
     return (
         <>
-            <div style={{ padding: "20px" }}>
+            <div style={{ padding: "20px", position: "relative" }}>
 
-                {/* Search, Filter, and Sorting Controls (Full-Width Row) */}
+                {/* Toast Notification at Bottom-Right */}
+                {cartMessage && (
+                    <div style={{
+                        position: "fixed",
+                        bottom: "20px",
+                        right: "20px",
+                        backgroundColor: "#4CAF50",
+                        color: "#fff",
+                        padding: "12px 16px",
+                        borderRadius: "5px",
+                        boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
+                        fontSize: "16px",
+                        zIndex: 1000,
+                        transition: "opacity 0.5s ease-in-out",
+                        opacity: cartMessage ? 1 : 0
+                    }}>
+                        {cartMessage}
+                    </div>
+                )}
+
+                {/* Search, Filter, and Sorting Controls */}
                 <div style={{ 
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr 1fr",
