@@ -13,6 +13,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import OrderHistory from "./pages/OrderHistory";
 
 const ProtectedRoute = ({ element }) => {
     const { user, loading } = useContext(AuthContext);
@@ -36,6 +37,7 @@ const App = () => {
                     <Route path="/cart" element={<ProtectedRoute element={<Cart />} />} />
                     <Route path="/checkout" element={<ProtectedRoute element={<Checkout />} />} />
                     <Route path="/orders" element={<ProtectedRoute element={<Orders />} />} />
+                    <Route path="/order-history" element={<OrderHistory />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password/:token" element={<ResetPassword />} />
                 </Routes>

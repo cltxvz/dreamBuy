@@ -210,5 +210,39 @@ module.exports = (io) => {
         }
     });
 
+    // Add multiple items to cart (Reorder feature)
+    router.post("/:userId/add-multiple", async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const { items } = req.body;
+
+            if (!items || items.length === 0) {
+                return res.status(400).json({ message: "No items provided for reorder." });
+            }
+
+            let cart = await Cart.findOne({ userId });
+
+            if (!cart) {
+                cart = new Cart({ userId, items: [] });
+            }
+
+            items.forEach((item) => {
+                const existingItem = cart.items.find(cartItem => cartItem.productId.toString() === item.productId);
+                if (existingItem) {
+                    existingItem.quantity += item.quantity;
+                } else {
+                    cart.items.push(item);
+                }
+            });
+
+            await cart.save();
+            res.json({ message: "Items added to cart successfully." });
+
+        } catch (error) {
+            console.error("Reorder Error:", error);
+            res.status(500).json({ message: "Server error" });
+        }
+    });
+
     return router;
 };

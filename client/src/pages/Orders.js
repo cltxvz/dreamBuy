@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useCallback } from "react";
+import { Link } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import axios from "axios";
 import OrderProgress from "../components/OrderProgress";
@@ -7,27 +8,29 @@ import io from "socket.io-client";
 const Orders = () => {
     const { user } = useContext(AuthContext);
     const [orders, setOrders] = useState([]);
-    const [showCompleted, setShowCompleted] = useState(false);
+    const [toastMessage, setToastMessage] = useState(""); // State for toast notification
 
+    // Fetch only active orders safely
     const fetchOrders = useCallback(() => {
         if (user) {
             axios.get(`http://localhost:5001/api/orders/${user.userId}`)
-                .then((res) => setOrders(res.data))
+                .then((res) => {
+                    setOrders(res.data?.filter(order => order.status !== "Delivered") || []);
+                })
                 .catch((err) => console.error(err));
         }
     }, [user]);
 
     useEffect(() => {
         fetchOrders();
-    
+
         const socket = io("http://localhost:5001", {
             query: { userId: user.userId }
         });
-    
+
         socket.on("orderUpdated", (updatedOrder) => {
             setOrders(prevOrders =>
                 prevOrders.map(order => {
-                    // Only update if the order matches
                     if (order.orderId === updatedOrder._id) {
                         const updatedItem = updatedOrder.items.find(i => i.productId === order.product._id);
                         if (updatedItem) {
@@ -38,24 +41,32 @@ const Orders = () => {
                 })
             );
         });
-    
+
         return () => socket.disconnect();
-    }, [fetchOrders, user]);  
+    }, [fetchOrders, user]);
 
     const cancelOrderItem = (orderId, productId) => {
+        const confirmCancel = window.confirm(
+            "Are you sure you want to cancel this order? A refund will be provided."
+        );
+
+        if (!confirmCancel) return;
+
         axios.post(`http://localhost:5001/api/orders/${orderId}/cancel/${productId}`)
             .then(() => {
-                setOrders(prevOrders => prevOrders.filter(order => 
+                setOrders(prevOrders => prevOrders.filter(order =>
                     !(order.orderId === orderId && order.product._id === productId)
                 ));
-                alert("Item removed from order!");
-            })
-            .catch((err) => alert(err.response?.data?.message || "Error canceling order"));
-    };
 
-    const filteredOrders = orders.filter(order => 
-        showCompleted ? order.status === "Delivered" : order.status !== "Delivered"
-    );
+                // Show toast notification
+                setToastMessage("Order canceled successfully. Refund issued.");
+                setTimeout(() => setToastMessage(""), 3000); // Clear message after 3 sec
+            })
+            .catch((err) => {
+                setToastMessage(err.response?.data?.message || "Error canceling order.");
+                setTimeout(() => setToastMessage(""), 3000);
+            });
+    };
 
     // Helper function for ETA calculation
     const calculateETA = (placedAt, deliveryDays) => {
@@ -71,32 +82,103 @@ const Orders = () => {
         });
     };
 
+    // Mask credit card number to only show last 4 digits
+    const maskCardNumber = (cardNumber) => {
+        return `**** **** **** ${cardNumber.slice(-4)}`;
+    };
 
     return (
-        <div>
-            <h1>Your Orders</h1>
-            
-            <button onClick={() => setShowCompleted(!showCompleted)}>
-                {showCompleted ? "Show In-Progress Orders" : "Show Completed Orders"}
-            </button>
+        <div style={{ padding: "20px", maxWidth: "900px", margin: "auto" }}>
+            <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Your Orders</h1>
 
-            {filteredOrders.length === 0 ? (
-                <p>{showCompleted ? "No completed orders yet." : "No active orders in progress."}</p>
+            {/* Toast Notification */}
+            {toastMessage && (
+                <div style={{
+                    position: "fixed",
+                    bottom: "20px",
+                    right: "20px",
+                    backgroundColor: "#ff4d4d",
+                    color: "#fff",
+                    padding: "12px 16px",
+                    borderRadius: "5px",
+                    boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
+                    fontSize: "16px",
+                    zIndex: 1000,
+                    transition: "opacity 0.5s ease-in-out",
+                    opacity: toastMessage ? 1 : 0
+                }}>
+                    {toastMessage}
+                </div>
+            )}
+
+            {/* Link to Order History */}
+            <div style={{ textAlign: "right", marginBottom: "20px" }}>
+                <Link to="/order-history" style={{
+                    backgroundColor: "#4CAF50",
+                    color: "white",
+                    padding: "8px 12px",
+                    borderRadius: "5px",
+                    textDecoration: "none"
+                }}>
+                    See Past Orders
+                </Link>
+            </div>
+
+            {orders.length === 0 ? (
+                <p style={{ textAlign: "center" }}>No active orders in progress.</p>
             ) : (
-                filteredOrders.map((order) => (
-                    <div key={`${order.orderId}-${order.product._id}`} style={{ border: "1px solid #ddd", padding: "15px", marginBottom: "15px" }}>
+                orders.map((order) => (
+                    <div key={`${order.orderId}-${order.product._id}`} style={{
+                        border: "1px solid #ddd",
+                        borderRadius: "8px",
+                        padding: "15px",
+                        marginBottom: "15px",
+                        backgroundColor: "#fff",
+                        boxShadow: "0px 2px 5px rgba(0,0,0,0.1)"
+                    }}>
                         <h3>Order ID: {order.orderId}</h3>
+
+                        {/* Product Image */}
+                        <div style={{
+                            display: "flex",
+                            justifyContent: "left",
+                            alignItems: "center",
+                            marginBottom: "10px"
+                        }}>
+                            <img 
+                                src={order.product.imageUrl} 
+                                alt={order.product.name} 
+                                style={{ 
+                                    width: "100px", 
+                                    height: "100px", 
+                                    objectFit: "contain"
+                                }} 
+                            />
+                        </div>
+
                         <p><strong>Product:</strong> {order.product.name}</p>
                         <p><strong>Quantity:</strong> {order.quantity}</p>
                         <p><strong>Price:</strong> ${order.totalAmount.toLocaleString()}</p>
-                        <p><strong>Delivery ETA:</strong> {calculateETA(order.placedAt, order.deliveryTime)}</p>
+                        <p><strong>Payment Method:</strong> {maskCardNumber(order.paymentMethod)}</p>
                         <p><strong>Shipping Address:</strong> {order.address}</p>
-                        <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
+                        <p><strong>Delivery ETA:</strong> {calculateETA(order.placedAt, order.deliveryTime)}</p>
 
                         <OrderProgress currentStatus={order.status || "Processing"} />
 
+                        {/* Show cancel button only if not yet Out for Delivery */}
                         {order.status !== "Out for Delivery" && order.status !== "Delivered" && (
-                            <button onClick={() => cancelOrderItem(order.orderId, order.product._id)}>
+                            <button 
+                                onClick={() => cancelOrderItem(order.orderId, order.product._id)}
+                                style={{
+                                    backgroundColor: "red",
+                                    color: "white",
+                                    padding: "8px 12px",
+                                    borderRadius: "5px",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    marginTop: "10px"
+                                }}
+                            >
                                 Cancel Order
                             </button>
                         )}

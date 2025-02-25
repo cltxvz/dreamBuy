@@ -17,6 +17,7 @@ const OrderProgress = ({ currentStatus }) => {
                                 borderRadius: "50%",
                                 backgroundColor: index <= currentIndex ? "#4CAF50" : "#ccc",
                                 margin: "auto",
+                                marginTop: "10px",
                             }}
                         />
                         <span style={{ fontSize: "12px" }}>{stage}</span>
