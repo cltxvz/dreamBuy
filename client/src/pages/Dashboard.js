@@ -3,7 +3,7 @@ import AuthContext from "../context/AuthContext";
 import axios from "axios";
 
 const Dashboard = () => {
-    const { user, logout, updateUser } = useContext(AuthContext);
+    const { user, updateUser } = useContext(AuthContext);
     const [addresses, setAddresses] = useState([]);
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [newAddress, setNewAddress] = useState("");
@@ -14,8 +14,12 @@ const Dashboard = () => {
     const [updatedEmail, setUpdatedEmail] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState(""); // "success" or "error"
+
+    // Inline Messages
+    const [profileMessage, setProfileMessage] = useState("");
+    const [passwordMessage, setPasswordMessage] = useState("");
+    const [addressMessage, setAddressMessage] = useState("");
+    const [paymentMessage, setPaymentMessage] = useState("");
 
     useEffect(() => {
         if (user) {
@@ -31,7 +35,7 @@ const Dashboard = () => {
     }, [user]);
 
     // Update Profile
-    const handleProfileUpdate = () => {
+    const handleProfileUpdate = (type) => {
         axios.put(`http://localhost:5001/api/users/${user.userId}/update`, { 
             name: updatedName, 
             email: updatedEmail, 
@@ -39,35 +43,48 @@ const Dashboard = () => {
             newPassword 
         })
         .then((res) => {
-            setMessage("Profile updated successfully!");
-            setMessageType("success");
-    
-            // **Update user context and store new token**
+            if (type === "profile") {
+                setProfileMessage("Profile updated successfully!");
+            } else {
+                setPasswordMessage("Password changed successfully!");
+            }
+
+            // Update user context and store new token
             updateUser({ userId: user.userId, name: res.data.user.name, email: res.data.user.email }, res.data.token);
-    
+
             setCurrentPassword(""); 
-            setNewPassword(""); 
-    
-            // Hide message after 3 seconds
-            setTimeout(() => setMessage(""), 3000);
+            setNewPassword("");
+
+            setTimeout(() => {
+                setProfileMessage("");
+                setPasswordMessage("");
+            }, 3000);
         })
         .catch((err) => {
-            setMessage(err.response?.data?.message || "Failed to update profile");
-            setMessageType("error");
-    
-            // Hide message after 3 seconds
-            setTimeout(() => setMessage(""), 3000);
+            if (type === "profile") {
+                setProfileMessage(err.response?.data?.message || "Failed to update profile");
+            } else {
+                setPasswordMessage(err.response?.data?.message || "Failed to change password");
+            }
+
+            setTimeout(() => {
+                setProfileMessage("");
+                setPasswordMessage("");
+            }, 3000);
         });
     };
-    
 
     // Add New Address
     const addAddress = () => {
-        if (!newAddress) return alert("Please enter an address!");
+        if (!newAddress) {
+            setAddressMessage("Please enter an address!");
+            return;
+        }
         axios.post(`http://localhost:5001/api/users/${user.userId}/address`, { address: newAddress })
             .then((res) => {
-                setAddresses([...res.data]); // Ensure UI updates immediately
+                setAddresses([...res.data]);
                 setNewAddress("");
+                setAddressMessage("");
             })
             .catch((err) => console.error(err));
     };
@@ -75,19 +92,21 @@ const Dashboard = () => {
     // Delete Address
     const deleteAddress = (index) => {
         axios.delete(`http://localhost:5001/api/users/${user.userId}/address/${index}`)
-            .then((res) => {
-                setAddresses([...res.data]); // Ensure state updates correctly
-            })
+            .then((res) => setAddresses([...res.data]))
             .catch((err) => console.error(err));
     };
 
     // Add Payment Method
     const addPaymentMethod = () => {
-        if (!newBalance || newBalance <= 0) return alert("Please enter a valid balance!");
+        if (!newBalance || newBalance <= 0) {
+            setPaymentMessage("Please enter a valid balance!");
+            return;
+        }
         axios.post(`http://localhost:5001/api/users/${user.userId}/payment`, { balance: Number(newBalance) })
             .then((res) => {
                 setPaymentMethods([...res.data]);
                 setNewBalance("");
+                setPaymentMessage("");
             })
             .catch((err) => console.error(err));
     };
@@ -100,91 +119,215 @@ const Dashboard = () => {
     };
 
     return (
-        <div>
-            <h1>Welcome, {user?.name}!</h1>
-            <button onClick={logout}>Log Out</button>
+        <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
+            <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Account Settings</h1>
 
             {/* Edit Profile Section */}
-            <h2>Edit Profile</h2>
-            {message && (
-                <p style={{ 
-                    color: messageType === "success" ? "green" : "red", 
-                    fontWeight: "bold" 
-                }}>
-                    {message}
-                </p>
-            )}
+            <div style={{ 
+                border: "1px solid #ddd", 
+                borderRadius: "8px", 
+                padding: "20px", 
+                marginBottom: "20px", 
+                backgroundColor: "#f9f9f9" 
+            }}>
+                <h2 style={{ marginBottom: "15px" }}>Edit Profile</h2>
 
-            <label>Name:</label>
-            <input 
-                type="text" 
-                value={updatedName} 
-                onChange={(e) => setUpdatedName(e.target.value)} 
-            />
+                <div style={{ marginBottom: "15px" }}>
+                    <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>Name:</label>
+                    <input 
+                        type="text" 
+                        value={updatedName} 
+                        onChange={(e) => setUpdatedName(e.target.value)} 
+                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                    />
+                </div>
 
-            <label>Email:</label>
-            <input 
-                type="email" 
-                value={updatedEmail} 
-                onChange={(e) => setUpdatedEmail(e.target.value)} 
-            />
+                <div style={{ marginBottom: "15px" }}>
+                    <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>Email:</label>
+                    <input 
+                        type="email" 
+                        value={updatedEmail} 
+                        onChange={(e) => setUpdatedEmail(e.target.value)} 
+                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                    />
+                </div>
 
-            <h3>Change Password</h3>
-            <label>Current Password:</label>
-            <input 
-                type="password" 
-                value={currentPassword} 
-                onChange={(e) => setCurrentPassword(e.target.value)} 
-            />
+                <button 
+                    onClick={() => handleProfileUpdate("profile")}
+                    style={{
+                        backgroundColor: "#4CAF50",
+                        color: "white",
+                        padding: "10px 15px",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        marginTop: "10px"
+                    }}
+                >
+                    Update Profile
+                </button>
+                {profileMessage && <p style={{ marginTop:"10px" }}>{profileMessage}</p>}
+            </div>
 
-            <label>New Password:</label>
-            <input 
-                type="password" 
-                value={newPassword} 
-                onChange={(e) => setNewPassword(e.target.value)} 
-            />
+            {/* Change Password Section */}
+            <div style={{ 
+                border: "1px solid #ddd", 
+                borderRadius: "8px", 
+                padding: "20px", 
+                marginBottom: "20px", 
+                backgroundColor: "#f9f9f9" 
+            }}>
 
-            <button onClick={handleProfileUpdate}>Update Profile</button>
+                <h3 style={{ marginBottom: "15px"}}>Change Password</h3>
+
+                <div style={{ marginBottom: "15px" }}>
+                    <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>Current Password:</label>
+                    <input 
+                        type="password" 
+                        value={currentPassword} 
+                        onChange={(e) => setCurrentPassword(e.target.value)} 
+                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                    />
+                </div>
+
+                <div style={{ marginBottom: "15px" }}>
+                    <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>New Password:</label>
+                    <input 
+                        type="password" 
+                        value={newPassword} 
+                        onChange={(e) => setNewPassword(e.target.value)} 
+                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                    />
+                </div>
+
+                <button 
+                    onClick={() => handleProfileUpdate("password")}
+                    style={{
+                        backgroundColor: "#4CAF50",
+                        color: "white",
+                        padding: "10px 15px",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        marginTop: "10px"
+                    }}
+                >
+                    Change Password
+                </button>
+                {passwordMessage && <p style={{ marginTop:"10px" }}>{passwordMessage}</p>}
+            </div>
 
             {/* Address Management */}
-            <h2>Manage Addresses</h2>
-            {addresses.length === 0 ? (
-                <p>No addresses saved.</p>
-            ) : (
-                addresses.map((address, index) => (
-                    <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <p>{address}</p>
-                        <button onClick={() => deleteAddress(index)}>Delete</button>
-                    </div>
-                ))
-            )}
-            <input 
-                type="text" 
-                value={newAddress} 
-                onChange={(e) => setNewAddress(e.target.value)} 
-                placeholder="Enter new address" 
-            />
-            <button onClick={addAddress}>Add Address</button>
+            <div style={{ 
+                border: "1px solid #ddd", 
+                borderRadius: "8px", 
+                padding: "20px", 
+                marginBottom: "20px", 
+                backgroundColor: "#f9f9f9" 
+            }}>
+                <h2 style={{ marginBottom: "15px" }}>Manage Addresses</h2>
+                {addresses.length === 0 ? (
+                    <p>No addresses saved.</p>
+                ) : (
+                    addresses.map((address, index) => (
+                        <div key={index} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd", padding: "8px 0" }}>
+                            
+                            <p style={{ margin: 0 }}>{address}</p>
+                            <button 
+                                onClick={() => deleteAddress(index)}
+                                style={{
+                                    backgroundColor: "#ff4d4d",
+                                    color: "white",
+                                    padding: "6px 10px",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: "pointer"
+                                }}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    ))
+                )}
+                <div style={{ marginTop: "15px" }}>
+                    <input 
+                        type="text" 
+                        value={newAddress} 
+                        onChange={(e) => setNewAddress(e.target.value)} 
+                        placeholder="Enter new address" 
+                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", marginBottom: "10px" }}
+                    />
+                    <button 
+                        onClick={addAddress} 
+                        style={{
+                            backgroundColor: "#4CAF50",
+                            color: "white",
+                            padding: "10px 15px",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer"
+                        }}
+                    >
+                        Add Address
+                    </button>
+                    {addressMessage && <p style={{ color: "red", marginTop:"10px" }}>{addressMessage}</p>}
+                </div>
+            </div>
 
             {/* Payment Management */}
-            <h2>Manage Payment Methods</h2>
-            {paymentMethods.length === 0 ? (
-                <p>No payment methods added.</p>
-            ) : (
-                paymentMethods.map((card) => (
-                    <div key={card.cardNumber} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <p>Card: {card.cardNumber} - Balance: ${card.balance.toFixed(2)}</p>
-                        <button onClick={() => deletePaymentMethod(card.cardNumber)}>Delete</button>
-                    </div>
-                ))
-            )}
-            <input 
-                type="number" 
-                value={newBalance} 
-                onChange={(e) => setNewBalance(e.target.value)} 
-                placeholder="Enter balance" 
-            />
-            <button onClick={addPaymentMethod}>Add Payment Method</button>
+            <div style={{ 
+                border: "1px solid #ddd", 
+                borderRadius: "8px", 
+                padding: "20px", 
+                backgroundColor: "#f9f9f9"
+            }}>
+                <h2 style={{ marginBottom: "15px" }}>Manage Payment Methods</h2>
+                {paymentMethods.length === 0 ? (
+                    <p>No payment methods added.</p>
+                ) : (
+                    paymentMethods.map((card) => (
+                        <div key={card.cardNumber} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd", padding: "8px 0" }}>
+                            <p style={{ margin: 0 }}>Card: **** **** **** {card.cardNumber.slice(-4)} - Balance: ${card.balance.toFixed(2)}</p>
+                            <button 
+                                onClick={() => deletePaymentMethod(card.cardNumber)}
+                                style={{
+                                    backgroundColor: "#ff4d4d",
+                                    color: "white",
+                                    padding: "6px 10px",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: "pointer"
+                                }}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    ))
+                )}
+                <div style={{ marginTop: "15px" }}>
+                    <input 
+                        type="number" 
+                        value={newBalance} 
+                        onChange={(e) => setNewBalance(e.target.value)} 
+                        placeholder="Enter balance" 
+                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", marginBottom: "10px" }}
+                    />
+                    <button 
+                        onClick={addPaymentMethod} 
+                        style={{
+                            backgroundColor: "#4CAF50",
+                            color: "white",
+                            padding: "10px 15px",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer"
+                        }}
+                    >
+                        Add Payment Method
+                    </button>
+                    {paymentMessage && <p style={{ color: "red", marginTop:"10px" }}>{paymentMessage}</p>}
+                </div>
+            </div>
         </div>
     );
 };
