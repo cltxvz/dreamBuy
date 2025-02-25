@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false); // Finish loading after user data retrieval
     }, []);
 
-    // **Login function**
+    // Login function
     const login = async (email, password) => {
         try {
             const res = await axios.post("http://localhost:5001/api/auth/login", { email, password });
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // **Signup function**
+    // Signup function
     const signup = async (name, email, password) => {
         try {
             const res = await axios.post("http://localhost:5001/api/auth/signup", { name, email, password });
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // **Logout function**
+    // Logout function
     const logout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
-    // **Update user function after profile update (Ensures token update)**
+    // Update user function after profile update
     const updateUser = (updatedUser, newToken = null) => {
         const updatedUserData = { ...user, ...updatedUser };
 

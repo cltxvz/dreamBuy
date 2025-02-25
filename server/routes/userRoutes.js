@@ -63,7 +63,7 @@ router.post("/login", async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" });
         }
         
-        // **Compare plain text password directly**
+        // Compare plain text password directly
         if (password !== user.password) {
             return res.status(400).json({ message: "Invalid email or password" });
         }
@@ -77,8 +77,6 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
-
-
 
 // Update Address
 router.put("/:userId/address", async (req, res) => {

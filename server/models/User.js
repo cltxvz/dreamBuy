@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, // Now stores plain text password
+    password: { type: String, required: true },
     addresses: { type: [String], default: [] },
     paymentMethods: { type: [{ cardNumber: String, balance: Number }], default: [] },
 });
