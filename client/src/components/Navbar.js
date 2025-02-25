@@ -21,6 +21,7 @@ const Navbar = () => {
             {user && <Link to="/cart" style={{ color: "white", textDecoration: "none" }}>Cart</Link>}
             {user && <Link to="/orders" style={{ color: "white", textDecoration: "none" }}>Orders</Link>}
             {user && <Link to="/dashboard" style={{ color: "white", textDecoration: "none" }}>Account</Link>}
+            
             {user ? (
                 <button 
                     onClick={logout} 
@@ -35,7 +36,18 @@ const Navbar = () => {
                     Logout
                 </button>
             ) : (
-                <Link to="/login" style={{ color: "white", textDecoration: "none" }}>Login</Link>
+                <Link 
+                    to="/login" 
+                    style={{ 
+                        backgroundColor: "#4CAF50", 
+                        color: "white", 
+                        padding: "5px 10px", 
+                        borderRadius: "5px", 
+                        textDecoration: "none",
+                        cursor: "pointer"
+                    }}>
+                    Login
+                </Link>
             )}
         </nav>
     );

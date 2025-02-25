@@ -153,7 +153,7 @@ const ProductCatalog = () => {
                                     style={{ 
                                         width: "100%",
                                         height: "100%",
-                                        objectFit: "cover"
+                                        objectFit: "contain",
                                     }} 
                                 />
                             </div>
@@ -170,7 +170,7 @@ const ProductCatalog = () => {
                                     min="1" 
                                     value={quantities[product._id] || 1} 
                                     onChange={(e) => handleQuantityChange(product._id, e.target.value)}
-                                    style={{ width: "60px", padding: "5px", border: "1px solid #ccc", borderRadius: "4px", textAlign: "center" }}
+                                    style={{ width: "60px", padding: "5px", border: "1px solid #ccc", borderRadius: "4px", textAlign: "center"}}
                                 />
                             </div>
 
