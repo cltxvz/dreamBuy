@@ -1,7 +1,3 @@
-Here's the **updated README** with your modifications:  
-
----
-
 # **🛍️ DreamBuy**  
 *"A real e-commerce simulator where you can shop like a millionaire!"*  
 
