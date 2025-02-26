@@ -46,26 +46,26 @@ Whether you're buying the latest gadgets, luxury items, or filling your cart lik
 
 ## **📚 Skills & Concepts Applied:**  
 
-### **🔹 Full-Stack Development**  
+### **Full-Stack Development**  
 - **Frontend & Backend Integration** – Connecting a React-based frontend with an Express/MongoDB backend.  
 - **RESTful API Design** – Secure and scalable API endpoints.  
 - **WebSockets (Socket.io)** – Live updates for order status tracking.  
 
-### **🔹 Software Engineering Best Practices**  
+### **Software Engineering Best Practices**  
 - **Modular & Scalable Codebase** – Organized folder structure for maintainability.  
 - **Middleware & Route Protection** – Securing API routes.  
 - **Environment Variables (.env)** – Protecting API keys and credentials.  
 
-### **🔹 Data Handling & State Management**  
+### **Data Handling & State Management**  
 - **MongoDB for Storing Products & Orders** – Efficient NoSQL database design.  
 - **React State Management (useState, useEffect)** – Dynamic UI updates.  
 - **Filtering & Sorting Algorithms** – Optimized product listings and order history retrieval.  
 
-### **🔹 Authentication & Authorization**  
+### **Authentication & Authorization**  
 - **JWT Authentication** – Secure login & session management.  
 - **User Access Control** – Protecting private routes with authentication.  
 
-### **🔹 UI/UX Enhancements**  
+### **UI/UX Enhancements**  
 - **Custom Confirmation Modals** – Replacing default `window.confirm`.  
 - **Toast Notifications** – Instant feedback for actions like order cancellation.  
 - **Responsive Design** – Mobile-friendly layout for all devices.  
@@ -74,22 +74,22 @@ Whether you're buying the latest gadgets, luxury items, or filling your cart lik
 
 ## **📖 Features & How to Use DreamBuy:**  
 
-### **🔹 User Authentication:**  
+### **User Authentication:**  
 - **Signup/Login** – Create an account for a personalized shopping experience.  
 - **Forgot Password & Reset Password** – Recover accounts via email.  
 
-### **🔹 Shopping Experience:**  
+### **Shopping Experience:**  
 - **Product Catalog** – Browse available items like a true millionaire.  
 - **Add to Cart & Update Cart** – Modify quantities or remove items easily.  
 - **Order Summary & Secure Checkout** – Simulated transactions for a complete shopping experience.  
 
-### **🔹 Order Tracking & Management:**  
+### **Order Tracking & Management:**  
 - **View Active Orders** – Keep track of your purchases.  
 - **Order Progress Indicator** – Displays each stage of your order.  
 - **Cancel Order & Refund System** – Cancel before "Out for Delivery" status.  
 - **Order History & Reorder** – Quickly repurchase previous items.  
 
-### **🔹 Payment & Address Management:**  
+### **Payment & Address Management:**  
 - **Add/Remove Payment Methods** – Store multiple cards (with imaginary funds!).  
 - **Manage Shipping Addresses** – Update or delete saved locations.  
 
@@ -146,13 +146,13 @@ npm start
 ```
 
 Then, visit:  
-👉 **http://localhost:3000**  
+**http://localhost:3000**  
 
 ---
 
 ## **🌎 Live Demo (Hosted on Heroku)**  
 
-👉 **DreamBuy App:** [https://dreambuy-frontend-a8d2abd7dad6.herokuapp.com](https://dreambuy-frontend-a8d2abd7dad6.herokuapp.com)   
+**DreamBuy App:** [https://dreambuy-frontend-a8d2abd7dad6.herokuapp.com](https://dreambuy-frontend-a8d2abd7dad6.herokuapp.com)   
 
 ---
 
