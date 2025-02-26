@@ -8,7 +8,9 @@ import io from "socket.io-client";
 const Orders = () => {
     const { user } = useContext(AuthContext);
     const [orders, setOrders] = useState([]);
-    const [toastMessage, setToastMessage] = useState(""); // State for toast notification
+    const [toastMessage, setToastMessage] = useState(""); // Toast notification state
+    const [modalVisible, setModalVisible] = useState(false); // Modal state
+    const [selectedOrder, setSelectedOrder] = useState(null); // Track order to cancel
 
     // Fetch only active orders safely
     const fetchOrders = useCallback(() => {
@@ -45,12 +47,17 @@ const Orders = () => {
         return () => socket.disconnect();
     }, [fetchOrders, user]);
 
-    const cancelOrderItem = (orderId, productId) => {
-        const confirmCancel = window.confirm(
-            "Are you sure you want to cancel this order? A refund will be provided."
-        );
+    // Open the custom modal
+    const openCancelModal = (orderId, productId) => {
+        setSelectedOrder({ orderId, productId });
+        setModalVisible(true);
+    };
 
-        if (!confirmCancel) return;
+    // Confirm cancellation
+    const confirmCancelOrder = () => {
+        if (!selectedOrder) return;
+
+        const { orderId, productId } = selectedOrder;
 
         axios.post(`http://localhost:5001/api/orders/${orderId}/cancel/${productId}`)
             .then(() => {
@@ -60,26 +67,23 @@ const Orders = () => {
 
                 // Show toast notification
                 setToastMessage("Order canceled successfully. Refund issued.");
-                setTimeout(() => setToastMessage(""), 3000); // Clear message after 3 sec
+                setTimeout(() => setToastMessage(""), 3000);
             })
             .catch((err) => {
                 setToastMessage(err.response?.data?.message || "Error canceling order.");
                 setTimeout(() => setToastMessage(""), 3000);
+            })
+            .finally(() => {
+                setModalVisible(false);
+                setSelectedOrder(null);
             });
     };
 
     // Helper function for ETA calculation
     const calculateETA = (placedAt, deliveryDays) => {
         const eta = new Date(new Date(placedAt).getTime() + deliveryDays * 24 * 60 * 60 * 1000);
-
-        return eta.toLocaleDateString(undefined, {
-            weekday: "long",
-            month: "long",
-            day: "numeric"
-        }) + " - " + eta.toLocaleTimeString(undefined, {
-            hour: "2-digit",
-            minute: "2-digit"
-        });
+        return eta.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) + 
+               " - " + eta.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
     };
 
     // Mask credit card number to only show last 4 digits
@@ -96,7 +100,8 @@ const Orders = () => {
                 <div style={{
                     position: "fixed",
                     bottom: "20px",
-                    right: "20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
                     backgroundColor: "#ff4d4d",
                     color: "#fff",
                     padding: "12px 16px",
@@ -139,21 +144,9 @@ const Orders = () => {
                         <h3>Order ID: {order.orderId}</h3>
 
                         {/* Product Image */}
-                        <div style={{
-                            display: "flex",
-                            justifyContent: "left",
-                            alignItems: "center",
-                            marginBottom: "10px"
-                        }}>
-                            <img 
-                                src={order.product.imageUrl} 
-                                alt={order.product.name} 
-                                style={{ 
-                                    width: "100px", 
-                                    height: "100px", 
-                                    objectFit: "contain"
-                                }} 
-                            />
+                        <div style={{ display: "flex", justifyContent: "left", alignItems: "center", marginBottom: "10px" }}>
+                            <img src={order.product.imageUrl} alt={order.product.name} 
+                                 style={{ width: "100px", height: "100px", objectFit: "contain" }} />
                         </div>
 
                         <p><strong>Product:</strong> {order.product.name}</p>
@@ -167,8 +160,7 @@ const Orders = () => {
 
                         {/* Show cancel button only if not yet Out for Delivery */}
                         {order.status !== "Out for Delivery" && order.status !== "Delivered" && (
-                            <button 
-                                onClick={() => cancelOrderItem(order.orderId, order.product._id)}
+                            <button onClick={() => openCancelModal(order.orderId, order.product._id)}
                                 style={{
                                     backgroundColor: "red",
                                     color: "white",
@@ -177,13 +169,43 @@ const Orders = () => {
                                     border: "none",
                                     cursor: "pointer",
                                     marginTop: "10px"
-                                }}
-                            >
+                                }}>
                                 Cancel Order
                             </button>
                         )}
                     </div>
                 ))
+            )}
+
+            {/* Custom Confirmation Modal */}
+            {modalVisible && (
+                <div style={{
+                    position: "fixed",
+                    top: "0",
+                    left: "0",
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: "white",
+                        padding: "20px",
+                        borderRadius: "8px",
+                        boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
+                        textAlign: "center",
+                        maxWidth: "400px"
+                    }}>
+                        <h3>Cancel Order</h3>
+                        <p>Are you sure you want to cancel this order?</p>
+                        <p><strong>A refund will be provided.</strong></p>
+                        <button onClick={confirmCancelOrder} style={{ backgroundColor: "red", color: "white", marginRight: "10px" }}>Yes, Cancel</button>
+                        <button onClick={() => setModalVisible(false)}>No, Keep Order</button>
+                    </div>
+                </div>
             )}
         </div>
     );

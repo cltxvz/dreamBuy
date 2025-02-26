@@ -62,7 +62,8 @@ const OrderHistory = () => {
                 <div style={{
                     position: "fixed",
                     bottom: "20px",
-                    right: "20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
                     backgroundColor: "#4CAF50",
                     color: "#fff",
                     padding: "12px 16px",

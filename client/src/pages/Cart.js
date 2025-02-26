@@ -86,7 +86,8 @@ const Cart = () => {
                 <div style={{
                     position: "fixed",
                     bottom: "20px",
-                    right: "20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
                     backgroundColor: "#ff4d4d",
                     color: "#fff",
                     padding: "12px 16px",

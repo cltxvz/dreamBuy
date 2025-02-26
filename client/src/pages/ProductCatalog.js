@@ -26,13 +26,16 @@ const ProductCatalog = () => {
 
     const addToCart = (productId) => {
         if (!user) {
-            alert("Please log in to add items to your cart.");
+            // Display success message
+            setCartMessage("You must be logged in to add items to the cart!");
+            setTimeout(() => setCartMessage(""), 3000);
             return;
         }
+
         const quantity = quantities[productId] || 1;
         axios.post(`http://localhost:5001/api/cart/${user.userId}/add`, { productId, quantity })
             .then(() => {
-                // Display success message at bottom-right
+                // Display success message
                 setCartMessage("Item added to cart!");
                 setTimeout(() => setCartMessage(""), 3000);
             })
@@ -69,12 +72,13 @@ const ProductCatalog = () => {
         <>
             <div style={{ padding: "20px", position: "relative" }}>
 
-                {/* Toast Notification at Bottom-Right */}
+                {/* Toast Notification */}
                 {cartMessage && (
                     <div style={{
                         position: "fixed",
                         bottom: "20px",
-                        right: "20px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
                         backgroundColor: "#4CAF50",
                         color: "#fff",
                         padding: "12px 16px",
