@@ -108,12 +108,12 @@ Whether you're buying the latest gadgets, luxury items, or filling your cart lik
 
 ### **1️⃣ Clone the Repository:**  
 ```bash
-git clone https://github.com/cltxvz/DreamBuy.git
+git clone https://github.com/cltxvz/dreamBuy.git
 ```
 
 ### **2️⃣ Install Backend Dependencies:**  
 ```bash
-cd DreamBuy/server
+cd dreamBuy/server
 npm install
 ```
 
