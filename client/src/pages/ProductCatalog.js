@@ -10,11 +10,19 @@ const ProductCatalog = () => {
     const { user } = useContext(AuthContext);
     const [quantities, setQuantities] = useState({});
     const [cartMessage, setCartMessage] = useState("");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get("http://localhost:5001/api/products")
-            .then((res) => setProducts(res.data))
-            .catch((err) => console.error(err));
+        // Fetch products from the backend
+        axios.get(`http://localhost:5001/api/products`)
+            .then((res) => {
+                setProducts(res.data);
+                setLoading(false); // Hide loading message once data is fetched
+            })
+            .catch((err) => {
+                console.error("Error fetching products:", err);
+                setLoading(false); // Hide loading even if there's an error
+            });
     }, []);
 
     const handleQuantityChange = (productId, value) => {
@@ -68,161 +76,170 @@ const ProductCatalog = () => {
             return 0;
         });
 
-    return (
-        <>
-            <div style={{ padding: "20px", position: "relative" }}>
-
-                {/* Toast Notification */}
-                {cartMessage && (
-                    <div style={{
-                        position: "fixed",
-                        bottom: "20px",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        backgroundColor: "#4CAF50",
-                        color: "#fff",
-                        padding: "12px 16px",
-                        borderRadius: "5px",
-                        boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
-                        fontSize: "16px",
-                        zIndex: 1000,
-                        transition: "opacity 0.5s ease-in-out",
-                        opacity: cartMessage ? 1 : 0
-                    }}>
-                        {cartMessage}
-                    </div>
-                )}
-
-                {/* Search, Filter, and Sorting Controls */}
-                <div style={{ 
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
-                    gap: "10px",
-                    marginBottom: "20px",
-                    width: "100%"
-                }}>
-                    {/* Search Bar */}
-                    <input 
-                        type="text" 
-                        placeholder="Search products..." 
-                        value={searchTerm} 
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            padding: "10px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            width: "100%",
-                            fontSize: "16px"
-                        }}
-                    />
-
-                    {/* Price Filter */}
-                    <select 
-                        value={priceFilter} 
-                        onChange={(e) => setPriceFilter(e.target.value)}
-                        style={{
-                            padding: "10px",
-                            borderRadius: "4px",
-                            border: "1px solid #ccc",
-                            width: "100%",
-                            fontSize: "16px"
-                        }}
-                    >
-                        <option value="all">All Prices</option>
-                        <option value="low">Under $100K</option>
-                        <option value="mid">$100K - $1M</option>
-                        <option value="high">Over $1M</option>
-                    </select>
-
-                    {/* Sorting Options */}
-                    <select 
-                        value={sortOption} 
-                        onChange={(e) => setSortOption(e.target.value)}
-                        style={{
-                            padding: "10px",
-                            borderRadius: "4px",
-                            border: "1px solid #ccc",
-                            width: "100%",
-                            fontSize: "16px"
-                        }}
-                    >
-                        <option value="none">Sort By</option>
-                        <option value="price-low-high">Price: Low to High</option>
-                        <option value="price-high-low">Price: High to Low</option>
-                        <option value="delivery-fastest">Fastest Delivery</option>
-                    </select>
-                </div>
-
-                {/* Product Grid */}
-                <div style={{ 
-                    display: "grid", 
-                    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
-                    gap: "20px" 
-                }}>
-                    {filteredProducts.map((product) => (
-                        <div key={product._id} style={{ 
-                            border: "1px solid #ddd", 
-                            padding: "15px", 
-                            borderRadius: "8px", 
-                            boxShadow: "0 2px 5px rgba(0,0,0,0.1)", 
-                            textAlign: "center", 
-                            backgroundColor: "#fff" 
+        return (
+            <>
+                <div style={{ padding: "20px", position: "relative" }}>
+        
+                    {/* Toast Notification */}
+                    {cartMessage && (
+                        <div style={{
+                            position: "fixed",
+                            bottom: "20px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            backgroundColor: "#4CAF50",
+                            color: "#fff",
+                            padding: "12px 16px",
+                            borderRadius: "5px",
+                            boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
+                            fontSize: "16px",
+                            zIndex: 1000,
+                            transition: "opacity 0.5s ease-in-out",
+                            opacity: cartMessage ? 1 : 0
                         }}>
-                            <div style={{
-                                width: "100%",
-                                height: "200px",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                overflow: "hidden"
-                            }}>
-                                <img 
-                                    src={product.imageUrl} 
-                                    alt={product.name} 
-                                    style={{ 
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: "contain",
-                                    }} 
-                                />
-                            </div>
-                            <h3 style={{ margin: "10px 0" }}>{product.name}</h3>
-                            <p style={{ fontWeight: "bold", margin: "5px 0" }}>${product.price.toLocaleString()}</p>
-                            <p style={{ color: "#555", margin: "5px 0" }}>
-                                Delivery: {formatDeliveryTime(product.deliveryTime)}
-                            </p>
-
-                            {/* Quantity Selector */}
-                            <div style={{ margin: "10px 0" }}>
-                                <input 
-                                    type="number" 
-                                    min="1" 
-                                    value={quantities[product._id] || 1} 
-                                    onChange={(e) => handleQuantityChange(product._id, e.target.value)}
-                                    style={{ width: "60px", padding: "5px", border: "1px solid #ccc", borderRadius: "4px", textAlign: "center"}}
-                                />
-                            </div>
-
-                            {/* Add to Cart Button */}
-                            <button 
-                                onClick={() => addToCart(product._id)}
-                                style={{
-                                    backgroundColor: "#4CAF50",
-                                    color: "#fff",
-                                    padding: "10px 20px",
-                                    border: "none",
-                                    borderRadius: "4px",
-                                    cursor: "pointer"
-                                }}
-                            >
-                                Add to Cart
-                            </button>
+                            {cartMessage}
                         </div>
-                    ))}
+                    )}
+        
+                    {/* Search, Filter, and Sorting Controls */}
+                    <div style={{ 
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr 1fr",
+                        gap: "10px",
+                        marginBottom: "20px",
+                        width: "100%"
+                    }}>
+                        {/* Search Bar */}
+                        <input 
+                            type="text" 
+                            placeholder="Search products..." 
+                            value={searchTerm} 
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                padding: "10px",
+                                border: "1px solid #ccc",
+                                borderRadius: "4px",
+                                width: "100%",
+                                fontSize: "16px"
+                            }}
+                        />
+        
+                        {/* Price Filter */}
+                        <select 
+                            value={priceFilter} 
+                            onChange={(e) => setPriceFilter(e.target.value)}
+                            style={{
+                                padding: "10px",
+                                borderRadius: "4px",
+                                border: "1px solid #ccc",
+                                width: "100%",
+                                fontSize: "16px"
+                            }}
+                        >
+                            <option value="all">All Prices</option>
+                            <option value="low">Under $100K</option>
+                            <option value="mid">$100K - $1M</option>
+                            <option value="high">Over $1M</option>
+                        </select>
+        
+                        {/* Sorting Options */}
+                        <select 
+                            value={sortOption} 
+                            onChange={(e) => setSortOption(e.target.value)}
+                            style={{
+                                padding: "10px",
+                                borderRadius: "4px",
+                                border: "1px solid #ccc",
+                                width: "100%",
+                                fontSize: "16px"
+                            }}
+                        >
+                            <option value="none">Sort By</option>
+                            <option value="price-low-high">Price: Low to High</option>
+                            <option value="price-high-low">Price: High to Low</option>
+                            <option value="delivery-fastest">Fastest Delivery</option>
+                        </select>
+                    </div>
+        
+                    {/* Show Loading Message */}
+                    {loading ? (
+                        <div style={{ textAlign: "center", padding: "20px" }}>
+                            <div className="loading-spinner"></div>
+                            <p style={{ fontSize: "18px", fontWeight: "bold", color: "#363636", marginTop: "10px" }}>
+                                Loading products...
+                            </p>
+                        </div>
+                    ) : (
+                        <div style={{ 
+                            display: "grid", 
+                            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
+                            gap: "20px" 
+                        }}>
+                            {filteredProducts.map((product) => (
+                                <div key={product._id} style={{ 
+                                    border: "1px solid #ddd", 
+                                    padding: "15px", 
+                                    borderRadius: "8px", 
+                                    boxShadow: "0 2px 5px rgba(0,0,0,0.1)", 
+                                    textAlign: "center", 
+                                    backgroundColor: "#fff" 
+                                }}>
+                                    <div style={{
+                                        width: "100%",
+                                        height: "200px",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        overflow: "hidden"
+                                    }}>
+                                        <img 
+                                            src={product.imageUrl} 
+                                            alt={product.name} 
+                                            style={{ 
+                                                width: "100%",
+                                                height: "100%",
+                                                objectFit: "contain",
+                                            }} 
+                                        />
+                                    </div>
+                                    <h3 style={{ margin: "10px 0" }}>{product.name}</h3>
+                                    <p style={{ fontWeight: "bold", margin: "5px 0" }}>${product.price.toLocaleString()}</p>
+                                    <p style={{ color: "#555", margin: "5px 0" }}>
+                                        Delivery: {formatDeliveryTime(product.deliveryTime)}
+                                    </p>
+        
+                                    {/* Quantity Selector */}
+                                    <div style={{ margin: "10px 0" }}>
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            value={quantities[product._id] || 1} 
+                                            onChange={(e) => handleQuantityChange(product._id, e.target.value)}
+                                            style={{ width: "60px", padding: "5px", border: "1px solid #ccc", borderRadius: "4px", textAlign: "center"}}
+                                        />
+                                    </div>
+        
+                                    {/* Add to Cart Button */}
+                                    <button 
+                                        onClick={() => addToCart(product._id)}
+                                        style={{
+                                            backgroundColor: "#4CAF50",
+                                            color: "#fff",
+                                            padding: "10px 20px",
+                                            border: "none",
+                                            borderRadius: "4px",
+                                            cursor: "pointer"
+                                        }}
+                                    >
+                                        Add to Cart
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-            </div>
-        </>
-    );
+            </>
+        ); 
 };
 
 export default ProductCatalog;
