@@ -67,6 +67,18 @@ const Checkout = () => {
         return `**** **** **** ${cardNumber.slice(-4)}`;
     };
 
+    // Calculate delivery ETA
+    const calculateETA = (deliveryDays) => {
+        const etaDate = new Date();
+        etaDate.setDate(etaDate.getDate() + deliveryDays);
+
+        return etaDate.toLocaleDateString(undefined, {
+            weekday: "long",
+            month: "long",
+            day: "numeric"
+        });
+    };
+
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
             <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Checkout</h1>
@@ -168,7 +180,10 @@ const Checkout = () => {
                                     }} 
                                 />
                                 <p style={{ margin: "0", flex: "1" }}>
-                                    <strong>{item.productId.name}</strong> x {item.quantity}
+                                    <strong>{item.productId.name}</strong> x {item.quantity} <br />
+                                    <span style={{ color: "#555", fontSize: "14px" }}>
+                                        Estimated Delivery: {calculateETA(item.productId.deliveryTime || 7)}
+                                    </span>
                                 </p>
                                 <p style={{ margin: "0", fontWeight: "bold" }}>
                                     ${ (item.productId.price * item.quantity).toLocaleString() }

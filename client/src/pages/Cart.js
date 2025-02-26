@@ -57,6 +57,18 @@ const Cart = () => {
         }
     };
 
+    // Calculate delivery ETA
+    const calculateETA = (deliveryDays) => {
+        const etaDate = new Date();
+        etaDate.setDate(etaDate.getDate() + deliveryDays);
+
+        return etaDate.toLocaleDateString(undefined, {
+            weekday: "long",
+            month: "long",
+            day: "numeric"
+        });
+    };
+
     // Handle Checkout with Delay
     const handleCheckout = () => {
         setIsRedirecting(true);
@@ -122,6 +134,11 @@ const Cart = () => {
                                 <h3 style={{ margin: "5px 0" }}>{item.productId.name}</h3>
                                 <p style={{ margin: "5px 0", fontSize: "16px", fontWeight: "bold" }}>
                                     ${item.productId.price.toLocaleString()}
+                                </p>
+
+                                {/* Delivery Time */}
+                                <p style={{ margin: "5px 0", color: "#555" }}>
+                                    <strong>Estimated Delivery:</strong> {calculateETA(item.productId.deliveryTime || 7)}
                                 </p>
 
                                 {/* Quantity Adjustments */}

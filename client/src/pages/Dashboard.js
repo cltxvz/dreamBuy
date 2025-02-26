@@ -115,9 +115,18 @@ const Dashboard = () => {
     const deletePaymentMethod = (cardNumber) => {
         axios.delete(`http://localhost:5001/api/users/${user.userId}/payment/${cardNumber}`)
             .then((res) => setPaymentMethods([...res.data]))
-            .catch((err) => console.error(err));
+            .catch((err) => {
+                if (err.response?.status === 400) {
+                    setPaymentMessage(err.response.data.message); // Display the error message
+                } else {
+                    console.error("Error deleting payment method:", err);
+                }
+            });
+    
+        // Clear the message after 3 seconds
+        setTimeout(() => setPaymentMessage(""), 3000);
     };
-
+    
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
             <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Account Settings</h1>

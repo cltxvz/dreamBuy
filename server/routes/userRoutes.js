@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../models/User");
+const Order = require("../models/Order");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const SECRET_KEY = process.env.JWT_SECRET;
@@ -139,11 +140,30 @@ router.post("/:userId/payment", async (req, res) => {
 // Delete Payment Method
 router.delete("/:userId/payment/:cardNumber", async (req, res) => {
     try {
-        const user = await User.findById(req.params.userId);
-        user.paymentMethods = user.paymentMethods.filter(card => card.cardNumber !== req.params.cardNumber);
+        const { userId, cardNumber } = req.params;
+
+        // Check if the card is in use in active orders
+        const activeOrders = await Order.find({
+            userId,
+            "paymentMethod.cardNumber": cardNumber,
+            status: { $ne: "Delivered" } // Exclude completed orders
+        });
+
+        if (activeOrders.length > 0) {
+            return res.status(400).json({ message: "This card is currently being used in an active order and cannot be deleted." });
+        }
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Remove the payment method
+        user.paymentMethods = user.paymentMethods.filter(method => method.cardNumber !== cardNumber);
         await user.save();
-        res.json(user.paymentMethods);
+
+        res.json(user.paymentMethods); // Return updated list
     } catch (error) {
+        console.error("Error deleting payment method:", error);
         res.status(500).json({ message: "Server error" });
     }
 });
