@@ -106,18 +106,18 @@ Whether you're buying the latest gadgets, luxury items, or filling your cart lik
 
 ## **📜 How to Run the Project Locally:**  
 
-### **1️⃣ Clone the Repository:**  
+### **1. Clone the Repository:**  
 ```bash
 git clone https://github.com/cltxvz/dreamBuy.git
 ```
 
-### **2️⃣ Install Backend Dependencies:**  
+### **2. Install Backend Dependencies:**  
 ```bash
 cd dreamBuy/server
 npm install
 ```
 
-### **3️⃣ Set Up Environment Variables:**  
+### **3. Set Up Environment Variables:**  
 Create a `.env` file inside the `server` folder and add:  
 ```env
 MONGO_URI=your-mongodb-atlas-connection-string
@@ -127,7 +127,7 @@ EMAIL_PASS=your-email-password
 FRONTEND_URL=http://localhost:3000
 ```
 
-### **4️⃣ Start the Backend Server:**  
+### **4. Start the Backend Server:**  
 ```bash
 npm start
 ```
@@ -138,7 +138,7 @@ node server.js
 
 ---
 
-### **5️⃣ Install & Run the Frontend:**  
+### **5. Install & Run the Frontend:**  
 ```bash
 cd ../client
 npm install
