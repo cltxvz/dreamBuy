@@ -1,5 +1,5 @@
 # **🛍️ DreamBuy**  
-*"A real e-commerce simulator where you can shop like a millionaire!"*  
+*"A real e-commerce simulator where you can shop like a billionaire!"*  
 
 ---
 
@@ -79,7 +79,7 @@ Whether you're buying the latest gadgets, luxury items, or filling your cart lik
 - **Forgot Password & Reset Password** – Recover accounts via email.  
 
 ### **Shopping Experience:**  
-- **Product Catalog** – Browse available items like a true millionaire.  
+- **Product Catalog** – Browse available items like a true billionaire.  
 - **Add to Cart & Update Cart** – Modify quantities or remove items easily.  
 - **Order Summary & Secure Checkout** – Simulated transactions for a complete shopping experience.  
 
@@ -163,8 +163,8 @@ Then, visit:
 
 ---
 
-### **✅ Final Thoughts:**  
-DreamBuy was built as a **real-world e-commerce simulator**, allowing users to **experience the thrill of online shopping without spending a cent**. This project showcases essential software engineering skills like **full-stack development, authentication, responsive UI design, and real-time order tracking**.  
+### **✅ Final Notes:**  
+DreamBuy was built as a real-world e-commerce simulator, allowing users to experience the thrill of online shopping without spending a cent. This project showcases essential software engineering skills like full-stack development, authentication, responsive UI design, and real-time order tracking.  
 
 If you’d like to expand or customize it, go ahead!  
 
