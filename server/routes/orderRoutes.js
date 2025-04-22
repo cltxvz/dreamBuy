@@ -135,6 +135,20 @@ module.exports = (io) => {
         }
     });
 
+    // Helper function for status updates
+    const determineStatus = (placedAt, deliveryTime, originalStatus) => {
+        if (deliveryTime <= 1) return originalStatus;
+    
+        const elapsedDays = (Date.now() - new Date(placedAt)) / (1000 * 60 * 60 * 24);
+    
+        if (elapsedDays >= deliveryTime) return "Delivered";
+        if (elapsedDays >= deliveryTime - 1) return "Out for Delivery";
+        if (elapsedDays >= deliveryTime / 2) return "Shipped";
+        if (elapsedDays >= deliveryTime / 10) return "Processed";
+    
+        return "Processing";
+    };    
+
     // Get all orders for a user
     router.get("/:userId", async (req, res) => {
         try {
@@ -147,13 +161,13 @@ module.exports = (io) => {
                         orderId: order._id,
                         product: item.productId,
                         quantity: item.quantity,
-                        status: item.status,
+                        status: determineStatus(item.placedAt, item.deliveryTime, item.status),
                         address: order.address,
                         paymentMethod: order.paymentMethod.cardNumber,
                         totalAmount: item.productId.price * item.quantity,
                         deliveryTime: item.deliveryTime,
                         placedAt: item.placedAt
-                    }))
+                    }))                    
             );
 
             res.json(separatedOrders);
